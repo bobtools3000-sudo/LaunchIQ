@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>LaunchIQ – Business Idea Validator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;900&family=Inter:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ============ CSS VARIABLES / THEME ============ */
+:root{
+  --accent:#6C5CE7;
+  --accent-2:#00D9C0;
+  --gold:#FFB800;
+  --danger:#FF5A5F;
+  --success:#00C896;
+  --radius-lg:24px;
+  --radius-md:16px;
+  --radius-sm:10px;
+  --font-ar:'Cairo','Tajawal',sans-serif;
+  --font-en:'Plus Jakarta Sans','Inter',sans-serif;
+  --transition:.35s cubic-bezier(.4,0,.2,1);
+}
+html[data-theme="dark"]{
+  --bg:#0B0B14;
+  --bg-2:#14141F;
+  --card:#1A1A28;
+  --card-hover:#22222F;
+  --border:#2A2A3B;
+  --text:#F5F5FA;
+  --text-dim:#9B9BB0;
+  --text-faint:#68687D;
+  --shadow:0 20px 60px rgba(0,0,0,.45);
+}
+html[data-theme="light"]{
+  --bg:#F6F6FB;
+  --bg-2:#FFFFFF;
+  --card:#FFFFFF;
+  --card-hover:#F0F0F9;
+  --border:#E6E6F0;
+  --text:#16162A;
+  --text-dim:#5F5F75;
+  --text-faint:#9494A8;
+  --shadow:0 20px 50px rgba(30,20,60,.08);
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:var(--font-ar);
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  transition:background var(--transition),color var(--transition);
+  overflow-x:hidden;
+}
+html[lang="en"] body{font-family:var(--font-en);}
+body::before{
+  content:"";
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(circle at 15% 10%, rgba(108,92,231,.16), transparent 45%),
+    radial-gradient(circle at 85% 85%, rgba(0,217,192,.12), transparent 45%);
+}
+button{font-family:inherit; cursor:pointer; border:none; background:none; color:inherit;}
+input,textarea{font-family:inherit;}
+::selection{background:var(--accent); color:#fff;}
+
+.app{position:relative; z-index:1; min-height:100vh; display:flex; flex-direction:column;}
+
+/* ============ TOP BAR ============ */
+.topbar{
+  position:sticky; top:0; z-index:50;
+  display:flex; align-items:center; gap:12px;
+  padding:14px 18px;
+  background:color-mix(in srgb, var(--bg) 85%, transparent);
+  backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border);
+}
+.back-btn{
+  width:40px; height:40px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--card); border:1px solid var(--border);
+  transition:var(--transition); flex-shrink:0;
+  opacity:0; pointer-events:none; transform:scale(.8);
+}
+.back-btn.show{opacity:1; pointer-events:auto; transform:scale(1);}
+.back-btn:hover{background:var(--card-hover);}
+.back-btn svg{width:18px; height:18px; stroke:var(--text);}
+html[dir="rtl"] .back-btn svg{transform:scaleX(-1);}
+
+.progress-wrap{flex:1; height:8px; background:var(--border); border-radius:99px; overflow:hidden; position:relative;}
+.progress-bar{
+  height:100%; width:0%; border-radius:99px;
+  background:linear-gradient(90deg,var(--accent),var(--accent-2));
+  transition:width .5s cubic-bezier(.4,0,.2,1);
+}
+.progress-pct{font-size:13px; font-weight:700; color:var(--text-dim); min-width:38px; text-align:center; flex-shrink:0;}
+
+.top-controls{display:flex; align-items:center; gap:8px; flex-shrink:0;}
+.icon-btn{
+  width:38px; height:38px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--card); border:1px solid var(--border);
+  transition:var(--transition);
+}
+.icon-btn:hover{background:var(--card-hover); transform:translateY(-1px);}
+.icon-btn svg{width:17px; height:17px; stroke:var(--text); fill:none;}
+
+.lang-menu-wrap{position:relative;}
+.lang-btn{
+  display:flex; align-items:center; gap:6px;
+  padding:8px 12px; border-radius:99px;
+  background:var(--card); border:1px solid var(--border);
+  font-size:13px; font-weight:700; color:var(--text);
+  transition:var(--transition);
+}
+.lang-btn:hover{background:var(--card-hover);}
+.lang-dropdown{
+  position:absolute; top:calc(100% + 8px); inset-inline-end:0;
+  background:var(--card); border:1px solid var(--border);
+  border-radius:var(--radius-sm); box-shadow:var(--shadow);
+  overflow:hidden; min-width:150px;
+  opacity:0; transform:translateY(-8px) scale(.96); pointer-events:none;
+  transition:var(--transition); z-index:60;
+}
+.lang-dropdown.open{opacity:1; transform:translateY(0) scale(1); pointer-events:auto;}
+.lang-option{
+  display:flex; align-items:center; gap:10px;
+  padding:11px 14px; font-size:14px; font-weight:600;
+  transition:background .2s; text-align:start; width:100%;
+}
+.lang-option:hover{background:var(--card-hover);}
+.lang-option.active{color:var(--accent);}
+
+/* ============ MAIN / SCREENS ============ */
+main{flex:1; display:flex; flex-direction:column; position:relative;}
+.screen{
+  display:none;
+  flex:1;
+  flex-direction:column;
+  align-items:center;
+  padding:32px 20px 60px;
+  animation:screenIn .5s cubic-bezier(.16,1,.3,1);
+  width:100%;
+  max-width:760px;
+  margin:0 auto;
+}
+.screen.active{display:flex;}
+@keyframes screenIn{
+  from{opacity:0; transform:translateY(18px);}
+  to{opacity:1; transform:translateY(0);}
+}
+
+.eyebrow{
+  display:inline-flex; align-items:center; gap:6px;
+  padding:6px 14px; border-radius:99px;
+  background:color-mix(in srgb, var(--accent) 14%, transparent);
+  color:var(--accent); font-size:12.5px; font-weight:800;
+  margin-bottom:18px; letter-spacing:.2px;
+}
+.screen h1{
+  font-size:clamp(26px,5vw,38px);
+  font-weight:900; line-height:1.25;
+  text-align:center; margin-bottom:12px;
+  letter-spacing:-.5px;
+}
+.screen .sub{
+  font-size:15.5px; color:var(--text-dim); text-align:center;
+  max-width:520px; line-height:1.65; margin-bottom:34px; font-weight:500;
+}
+.grad-text{
+  background:linear-gradient(90deg,var(--accent),var(--accent-2));
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+
+/* ============ BUTTONS ============ */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  padding:16px 32px; border-radius:var(--radius-md);
+  font-size:16px; font-weight:800;
+  transition:var(--transition); position:relative; overflow:hidden;
+}
+.btn-primary{
+  background:linear-gradient(135deg,var(--accent),#8B7CF6);
+  color:#fff; box-shadow:0 10px 30px -8px rgba(108,92,231,.6);
+  width:100%; max-width:400px;
+}
+.btn-primary:hover{transform:translateY(-2px); box-shadow:0 14px 36px -8px rgba(108,92,231,.75);}
+.btn-primary:active{transform:translateY(0);}
+.btn-primary:disabled{opacity:.4; pointer-events:none;}
+.btn-ghost{
+  background:var(--card); border:1px solid var(--border); color:var(--text);
+}
+.btn-ghost:hover{background:var(--card-hover);}
+.btn-block{width:100%; max-width:400px;}
+
+/* ============ LANGUAGE SELECT SCREEN ============ */
+.lang-select-grid{
+  display:grid; grid-template-columns:1fr 1fr; gap:14px;
+  width:100%; max-width:420px; margin-bottom:30px;
+}
+.lang-card{
+  padding:26px 14px; border-radius:var(--radius-md);
+  background:var(--card); border:2px solid var(--border);
+  text-align:center; transition:var(--transition);
+  display:flex; flex-direction:column; align-items:center; gap:10px;
+}
+.lang-card .flag{font-size:34px;}
+.lang-card .name{font-weight:800; font-size:16px;}
+.lang-card:hover{border-color:var(--accent); transform:translateY(-3px);}
+.lang-card.selected{border-color:var(--accent); background:color-mix(in srgb, var(--accent) 10%, var(--card)); box-shadow:0 8px 24px -8px rgba(108,92,231,.5);}
+
+.app-brand{
+  font-size:14px; font-weight:900; letter-spacing:.5px;
+  color:var(--text-faint); text-transform:uppercase;
+  margin-bottom:14px;
+}
+.hero-icon{
+  width:88px; height:88px; border-radius:26px;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  display:flex; align-items:center; justify-content:center;
+  margin-bottom:24px; box-shadow:0 16px 40px -12px rgba(108,92,231,.55);
+}
+.hero-icon svg{width:42px; height:42px; stroke:#fff; fill:none; stroke-width:1.8;}
+
+/* ============ STEP 2: CHOICE ============ */
+.path-toggle{
+  display:flex; background:var(--card); border:1px solid var(--border);
+  border-radius:99px; padding:5px; margin-bottom:28px; width:100%; max-width:380px;
+}
+.path-toggle button{
+  flex:1; padding:11px 10px; border-radius:99px; font-weight:800; font-size:13.5px;
+  color:var(--text-dim); transition:var(--transition);
+}
+.path-toggle button.active{background:linear-gradient(135deg,var(--accent),#8B7CF6); color:#fff;}
+
+.model-grid{
+  display:grid; grid-template-columns:1fr 1fr; gap:14px;
+  width:100%; margin-bottom:10px;
+}
+@media(max-width:520px){ .model-grid{grid-template-columns:1fr;} }
+.model-card{
+  background:var(--card); border:2px solid var(--border); border-radius:var(--radius-md);
+  padding:20px 16px; text-align:start; transition:var(--transition);
+  display:flex; flex-direction:column; gap:10px; position:relative;
+}
+.model-card:hover{border-color:color-mix(in srgb, var(--accent) 50%, var(--border)); transform:translateY(-3px);}
+.model-card.selected{border-color:var(--accent); background:color-mix(in srgb, var(--accent) 8%, var(--card));}
+.model-card .m-icon{
+  width:46px; height:46px; border-radius:14px;
+  background:color-mix(in srgb, var(--accent) 15%, transparent);
+  display:flex; align-items:center; justify-content:center; font-size:22px;
+}
+.model-card .m-title{font-weight:800; font-size:15px;}
+.model-card .m-desc{font-size:12.5px; color:var(--text-dim); line-height:1.5; font-weight:500;}
+.model-card .m-check{
+  position:absolute; top:14px; inset-inline-end:14px;
+  width:22px; height:22px; border-radius:50%; border:2px solid var(--border);
+  transition:var(--transition);
+}
+.model-card.selected .m-check{
+  background:var(--accent); border-color:var(--accent);
+  display:flex; align-items:center; justify-content:center;
+}
+.model-card.selected .m-check::after{content:"✓"; color:#fff; font-size:13px; font-weight:900;}
+
+.idea-textarea{
+  width:100%; max-width:600px; min-height:130px; padding:18px;
+  border-radius:var(--radius-md); background:var(--card); border:2px solid var(--border);
+  color:var(--text); font-size:15px; resize:vertical; line-height:1.6; transition:var(--transition);
+}
+.idea-textarea:focus{outline:none; border-color:var(--accent);}
+.idea-textarea::placeholder{color:var(--text-faint);}
+.idea-suggestion{
+  width:100%; max-width:600px; margin-top:16px; padding:16px 18px;
+  border-radius:var(--radius-md); background:color-mix(in srgb, var(--accent-2) 10%, var(--card));
+  border:1.5px solid color-mix(in srgb, var(--accent-2) 40%, var(--border));
+  display:none; align-items:flex-start; gap:12px;
+}
+.idea-suggestion.show{display:flex; animation:screenIn .4s;}
+.idea-suggestion .s-icon{font-size:20px; flex-shrink:0; margin-top:1px;}
+.idea-suggestion .s-text{font-size:14px; line-height:1.6; font-weight:600;}
+.idea-suggestion .s-label{color:var(--accent-2); font-weight:900; font-size:12px; display:block; margin-bottom:3px; letter-spacing:.3px;}
+
+/* ============ QUESTION SCREEN ============ */
+.q-section-badge{
+  font-size:12px; font-weight:900; letter-spacing:.5px;
+  color:var(--accent-2); text-transform:uppercase; margin-bottom:10px;
+}
+.q-number{font-size:13px; color:var(--text-faint); font-weight:700; margin-bottom:16px;}
+.q-title{
+  font-size:clamp(20px,4vw,26px); font-weight:800; line-height:1.4;
+  text-align:center; margin-bottom:8px; max-width:600px;
+}
+.q-hint{font-size:14px; color:var(--text-dim); text-align:center; margin-bottom:30px; max-width:520px; font-weight:500;}
+.options-list{width:100%; max-width:560px; display:flex; flex-direction:column; gap:12px;}
+.option-card{
+  display:flex; align-items:center; gap:14px;
+  padding:18px 20px; border-radius:var(--radius-md);
+  background:var(--card); border:2px solid var(--border);
+  transition:var(--transition); text-align:start; width:100%;
+}
+.option-card:hover{border-color:color-mix(in srgb, var(--accent) 50%, var(--border)); transform:translateY(-2px);}
+.option-card.selected{
+  border-color:var(--accent); background:color-mix(in srgb, var(--accent) 10%, var(--card));
+  box-shadow:0 8px 22px -10px rgba(108,92,231,.5);
+}
+.option-radio{
+  width:24px; height:24px; border-radius:50%; border:2px solid var(--border);
+  flex-shrink:0; transition:var(--transition); position:relative;
+}
+.option-card.selected .option-radio{border-color:var(--accent); background:var(--accent);}
+.option-card.selected .option-radio::after{
+  content:""; position:absolute; inset:5px; border-radius:50%; background:#fff;
+}
+.option-label{font-size:15.5px; font-weight:700; flex:1; line-height:1.5;}
+
+/* ============ LOADER SCREEN ============ */
+.loader-screen{justify-content:center; align-items:center; text-align:center;}
+.loader-ring-wrap{position:relative; width:150px; height:150px; margin-bottom:32px;}
+.loader-ring-wrap svg{width:100%; height:100%; transform:rotate(-90deg);}
+.loader-ring-bg{fill:none; stroke:var(--border); stroke-width:8;}
+.loader-ring-fg{
+  fill:none; stroke:url(#loaderGrad); stroke-width:8; stroke-linecap:round;
+  stroke-dasharray:439.8; stroke-dashoffset:439.8;
+  transition:stroke-dashoffset .4s linear;
+}
+.loader-pct{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-size:30px; font-weight:900;
+}
+.loader-status{font-size:15px; font-weight:700; color:var(--text-dim); min-height:22px; transition:opacity .3s;}
+.loader-bars{display:flex; gap:5px; align-items:flex-end; height:34px; margin-top:24px;}
+.loader-bars span{
+  width:6px; border-radius:4px; background:linear-gradient(180deg,var(--accent),var(--accent-2));
+  animation:barPulse 1.1s ease-in-out infinite;
+}
+.loader-bars span:nth-child(1){height:14px; animation-delay:0s;}
+.loader-bars span:nth-child(2){height:26px; animation-delay:.1s;}
+.loader-bars span:nth-child(3){height:34px; animation-delay:.2s;}
+.loader-bars span:nth-child(4){height:20px; animation-delay:.3s;}
+.loader-bars span:nth-child(5){height:30px; animation-delay:.4s;}
+@keyframes barPulse{0%,100%{transform:scaleY(.4);} 50%{transform:scaleY(1);}}
+
+/* ============ RESULTS SCREEN ============ */
+.result-badge{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:9px 20px; border-radius:99px; font-weight:900; font-size:14px;
+  margin-bottom:22px;
+}
+.badge-gold{background:color-mix(in srgb, var(--gold) 18%, transparent); color:var(--gold);}
+.badge-promising{background:color-mix(in srgb, var(--accent-2) 16%, transparent); color:var(--accent-2);}
+.badge-risky{background:color-mix(in srgb, var(--danger) 16%, transparent); color:var(--danger);}
+
+.score-ring-wrap{position:relative; width:190px; height:190px; margin-bottom:10px;}
+.score-ring-wrap svg{width:100%; height:100%; transform:rotate(-90deg);}
+.score-ring-bg{fill:none; stroke:var(--border); stroke-width:14;}
+.score-ring-fg{
+  fill:none; stroke-width:14; stroke-linecap:round;
+  stroke-dasharray:502.4; stroke-dashoffset:502.4;
+  transition:stroke-dashoffset 1.4s cubic-bezier(.16,1,.3,1);
+}
+.score-center{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;}
+.score-num{font-size:44px; font-weight:900; line-height:1;}
+.score-max{font-size:13px; color:var(--text-faint); font-weight:700; margin-top:4px;}
+
+.dual-scores{
+  display:grid; grid-template-columns:1fr 1fr; gap:14px;
+  width:100%; max-width:520px; margin:30px 0 26px;
+}
+.mini-score{
+  background:var(--card); border:1px solid var(--border); border-radius:var(--radius-md);
+  padding:18px; text-align:center;
+}
+.mini-score .ms-label{font-size:12.5px; color:var(--text-dim); font-weight:800; margin-bottom:8px; display:flex; align-items:center; justify-content:center; gap:6px;}
+.mini-score .ms-value{font-size:26px; font-weight:900; margin-bottom:8px;}
+.mini-bar-track{height:8px; border-radius:99px; background:var(--border); overflow:hidden;}
+.mini-bar-fill{height:100%; border-radius:99px; width:0%; transition:width 1.2s cubic-bezier(.16,1,.3,1);}
+
+.insight-cards{width:100%; max-width:560px; display:flex; flex-direction:column; gap:14px; margin-bottom:26px;}
+.insight-card{
+  padding:20px; border-radius:var(--radius-md); border:1.5px solid var(--border);
+  display:flex; gap:14px; align-items:flex-start; text-align:start;
+}
+.insight-card.strength{background:color-mix(in srgb, var(--success) 8%, var(--card)); border-color:color-mix(in srgb, var(--success) 30%, var(--border));}
+.insight-card.weakness{background:color-mix(in srgb, var(--danger) 8%, var(--card)); border-color:color-mix(in srgb, var(--danger) 30%, var(--border));}
+.insight-card.action{background:color-mix(in srgb, var(--accent) 8%, var(--card)); border-color:color-mix(in srgb, var(--accent) 30%, var(--border));}
+.insight-icon{font-size:22px; flex-shrink:0;}
+.insight-title{font-weight:900; font-size:14px; margin-bottom:5px;}
+.insight-card.strength .insight-title{color:var(--success);}
+.insight-card.weakness .insight-title{color:var(--danger);}
+.insight-card.action .insight-title{color:var(--accent);}
+.insight-text{font-size:14px; color:var(--text-dim); line-height:1.65; font-weight:500;}
+
+.result-actions{display:flex; gap:12px; width:100%; max-width:400px; flex-wrap:wrap;}
+.result-actions .btn{flex:1;}
+
+/* footer credit small */
+.footer-note{margin-top:36px; font-size:12px; color:var(--text-faint); text-align:center;}
+
+/* Fade utility */
+.fade-in{animation:fadeIn .6s ease both;}
+@keyframes fadeIn{from{opacity:0;} to{opacity:1;}}
+
+@media(max-width:480px){
+  .screen{padding:24px 16px 50px;}
+  .topbar{padding:12px 14px;}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <button class="back-btn" id="backBtn" aria-label="back">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+    <span class="progress-pct" id="progressPct">0%</span>
+    <div class="top-controls">
+      <button class="icon-btn" id="themeBtn" aria-label="theme">
+        <svg id="themeIcon" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
+      </button>
+      <div class="lang-menu-wrap">
+        <button class="lang-btn" id="langBtn">
+          <span id="langBtnFlag">🌐</span><span id="langBtnLabel">EN</span>
+        </button>
+        <div class="lang-dropdown" id="langDropdown"></div>
+      </div>
+    </div>
+  </div>
+
+  <main id="main">
+    <!-- Screens injected by JS -->
+  </main>
+</div>
+
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <linearGradient id="loaderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6C5CE7"/>
+      <stop offset="100%" stop-color="#00D9C0"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<script>
+(function(){
+"use strict";
+
+/* ================= I18N DICTIONARY ================= */
+const I18N = {
+  ar:{
+    dir:"rtl", font:"var(--font-ar)",
+    langName:"العربية", langFlag:"🇸🇦",
+    appName:"LaunchIQ",
+    nav:{ back:"رجوع" },
+    welcome:{
+      eyebrow:"أداة تقييم الأفكار",
+      title:"اختر لغتك المفضلة",
+      sub:"سنساعدك خلال دقيقتين على تقييم فكرة مشروعك الرقمي بدقة، ومعرفة مدى قابليتها للانطلاق والاستمرار.",
+      cta:"ابدأ التقييم الآن"
+    },
+    step2:{
+      eyebrow:"الخطوة 1 من 3",
+      title:"ما هو النشاط الذي تفكر فيه؟",
+      sub:"اختر نموذج عمل جاهز من القائمة، أو صف فكرتك بكلماتك الخاصة وسنحدد لك التصنيف الأنسب.",
+      tabModel:"نموذج جاهز",
+      tabIdea:"صف فكرتك",
+      placeholder:"مثال: أريد إنشاء بوت يرد على عملاء المتاجر تلقائياً على واتساب...",
+      continue:"متابعة",
+      suggestLabel:"الأقرب لفكرتك",
+      models:[
+        {id:"voice_agent", icon:"🎙️", title:"موظف صوتي بالذكاء الاصطناعي", desc:"أتمتة الرد والحجز الصوتي للشركات", kws:["صوت","اتصال","مكالم","بوت صوتي","reception","call"]},
+        {id:"content_agency", icon:"🎯", title:"وكالة إعلانات ومحتوى", desc:"إدارة حملات وصناعة محتوى للعملاء", kws:["اعلان","حملة","محتوى","تسويق","سوشيال","ads","marketing"]},
+        {id:"digital_products", icon:"💎", title:"منتجات رقمية", desc:"كورسات، قوالب، أو أدوات تُباع مرة واحدة", kws:["كورس","قالب","منتج رقمي","ايبوك","template","ebook"]},
+        {id:"content_automation", icon:"⚙️", title:"أتمتة صناعة المحتوى", desc:"أنظمة تنتج محتوى بشكل شبه آلي", kws:["اتمتة","تلقائي","automation","ai content","توليد محتوى"]},
+        {id:"micro_saas", icon:"🧩", title:"خدمات SaaS مصغرة", desc:"أداة اشتراك شهري تحل مشكلة محددة", kws:["ساس","saas","اشتراك","برنامج","تطبيق ويب","app"]},
+        {id:"ecom_dropship", icon:"🛒", title:"متجر تجارة إلكترونية", desc:"بيع منتجات فيزيائية أو دروبشيبينغ", kws:["متجر","تجارة","دروب","شحن","منتجات فيزيائية","shopify"]},
+        {id:"consulting", icon:"🧠", title:"استشارات وخدمات خبرة", desc:"بيع وقتك وخبرتك للعملاء مباشرة", kws:["استشار","خبرة","كوتش","تدريب","consulting","coaching"]},
+        {id:"community", icon:"👥", title:"مجتمع أو عضوية مدفوعة", desc:"مجتمع مغلق باشتراك دوري وقيمة مستمرة", kws:["مجتمع","عضوية","اشتراك شهري","community","membership"]},
+        {id:"freelance_agency", icon:"🖥️", title:"وكالة خدمات تقنية", desc:"تطوير مواقع، تطبيقات، أو تصميم للعملاء", kws:["تطوير","برمجة","تصميم","وكالة تقنية","dev agency"]},
+        {id:"ai_tool", icon:"🤖", title:"أداة أو منتج ذكاء اصطناعي", desc:"منتج SaaS مبني حول نموذج ذكاء اصطناعي", kws:["ذكاء اصطناعي","ai tool","gpt","نموذج لغوي"]}
+      ],
+      fallbackSuggest:"بناءً على وصفك، فكرتك أقرب إلى تصنيف \"أداة أو خدمة رقمية مخصصة\" — يمكنك المتابعة وسنقيّمها بمعايير عامة."
+    },
+    q:{
+      launchTitle:"البوصلة الخماسية: معايير الانطلاق",
+      stabilityTitle:"معايير البقاء والاستقرار",
+      qLabel:(n,t)=>`سؤال ${n} من 10`,
+      questions:[
+        // LAUNCH (5) - weight higher for early speed factors
+        {section:"launch", weight:1.2, title:"سرعة العائد المادي (Speed to Cash)", hint:"هل يمكن لهذا النشاط أن يحقق دخلاً فعلياً خلال أسابيع قليلة؟",
+          options:[
+            {label:"نعم، يمكن تحقيق أول عملية بيع خلال أسبوعين تقريباً", score:100},
+            {label:"يحتاج شهراً إلى شهرين من الإعداد قبل أول عائد", score:60},
+            {label:"يتطلب عدة أشهر من البناء والتجهيز قبل أي عائد", score:25}
+          ]},
+        {section:"launch", weight:1.0, title:"سهولة البدء بمفردك (Solo-friendliness)", hint:"هل يمكنك إدارة وتنفيذ هذا النشاط بمفردك دون فريق عمل؟",
+          options:[
+            {label:"نعم، يمكن إدارته بالكامل فردياً من البداية", score:100},
+            {label:"يمكن البدء فردياً لكن سيحتاج مساعدة لاحقاً", score:65},
+            {label:"يتطلب فريق عمل منذ اليوم الأول", score:20}
+          ]},
+        {section:"launch", weight:1.1, title:"طبيعة الدخل (Recurring vs One-time)", hint:"هل الدخل المتوقع اشتراك متكرر أم دفعة واحدة لكل عميل؟",
+          options:[
+            {label:"اشتراك أو دخل متكرر شهرياً بشكل أساسي", score:100},
+            {label:"مزيج بين دخل متكرر ومبيعات لمرة واحدة", score:65},
+            {label:"دفعة واحدة فقط لكل عميل دون تكرار", score:30}
+          ]},
+        {section:"launch", weight:0.9, title:"متطلبات رأس المال (Startup Capital)", hint:"ما حجم رأس المال المطلوب للانطلاق الفعلي؟",
+          options:[
+            {label:"يقترب من الصفر، يمكن البدء بأقل من 100$", score:100},
+            {label:"رأس مال متوسط بين 100$ إلى 1000$", score:60},
+            {label:"يتطلب استثماراً كبيراً يفوق 1000$", score:25}
+          ]},
+        {section:"launch", weight:1.0, title:"قابلية التوسع (Scalability)", hint:"هل يمكن مضاعفة العملاء والأرباح دون مضاعفة ساعات العمل بنفس النسبة؟",
+          options:[
+            {label:"نعم، النموذج قابل للتوسع بسهولة عبر الأتمتة أو المنتج", score:100},
+            {label:"قابل للتوسع لكن بجهد إضافي ملحوظ", score:60},
+            {label:"كل عميل جديد يتطلب وقتاً وجهداً مماثلاً تقريباً", score:25}
+          ]}
+      ],
+      questions2:[
+        {section:"stability", weight:1.3, title:"الخندق التنافسي (Moat & Defensibility)", hint:"ما مدى صعوبة استبدال خدمتك بأداة ذكاء اصطناعي مجانية أو منافس سريع؟",
+          options:[
+            {label:"صعب جداً استبدالها، تعتمد على علاقة أو خبرة أو بيانات فريدة", score:100},
+            {label:"يمكن تقليدها لكن بجهد ووقت لا بأس بهما", score:55},
+            {label:"يسهل استبدالها بأداة مجانية أو منافس بسيط", score:20}
+          ]},
+        {section:"stability", weight:1.1, title:"سهولة الوصول للعملاء (Client Acquisition)", hint:"هل الطريق واضح للوصول إلى متخذ القرار وإتمام البيع؟",
+          options:[
+            {label:"نعم، أعرف بالضبط أين أجد عملائي وكيف أصل إليهم", score:100},
+            {label:"لدي فكرة عامة لكن سيحتاج تجربة وتحسين", score:55},
+            {label:"غير واضح، سيتطلب بحثاً واختباراً طويلاً", score:20}
+          ]},
+        {section:"stability", weight:1.0, title:"كثافة التشغيل (Operational Fulfillment)", hint:"هل الخدمة تلتهم وقتك في التعديلات والدعم، أم مقولبة ومؤتمتة؟",
+          options:[
+            {label:"مقولبة وشبه مؤتمتة، لا تحتاج تدخلاً يومياً كبيراً", score:100},
+            {label:"تحتاج بعض المتابعة والتعديلات بشكل دوري", score:55},
+            {label:"تتطلب دعماً وتعديلات مستمرة تستهلك وقتاً كبيراً", score:20}
+          ]},
+        {section:"stability", weight:0.9, title:"مخاطر الاعتماد على منصة واحدة (Platform Dependency)", hint:"هل نجاح العمل يعتمد على أداة أو منصة واحدة قد تتغير أو ترفع أسعارها؟",
+          options:[
+            {label:"لا يعتمد على منصة واحدة، البنية مرنة ومتنوعة", score:100},
+            {label:"يعتمد جزئياً على منصة رئيسية لكن يمكن التبديل", score:55},
+            {label:"يعتمد كلياً على منصة واحدة قد تغلق أو تغيّر سياستها", score:20}
+          ]},
+        {section:"stability", weight:1.2, title:"القيمة الدائمة للعميل (LTV vs Churn)", hint:"هل خدمتك ترتبط مباشرة بزيادة أرباح عميلك بما يضمن بقاءه طويلاً؟",
+          options:[
+            {label:"نعم، ترتبط مباشرة بنتائج ملموسة تزيد من رغبته بالاستمرار", score:100},
+            {label:"ترتبط جزئياً بنتائج ملموسة للعميل", score:55},
+            {label:"القيمة غير مرتبطة بشكل واضح بنتائج قابلة للقياس", score:20}
+          ]}
+      ]
+    },
+    loader:{
+      title:"جاري تحليل إجاباتك...",
+      statuses:["نجمع بيانات الإجابات...","نحسب مؤشر سرعة الانطلاق...","نحلل عوامل الاستقرار طويل المدى...","نجهّز تقريرك النهائي..."]
+    },
+    result:{
+      eyebrow:"تقرير التقييم الشامل",
+      title:"نتيجة تقييم فكرتك",
+      scoreOf:"من 100",
+      launchLabel:"جاهزية الانطلاق السريع",
+      stabilityLabel:"الاستقرار طويل المدى",
+      strengthTitle:"أبرز نقاط القوة",
+      weaknessTitle:"أكبر نقطة ضعف يجب الحذر منها",
+      actionTitle:"نصيحتنا كخطوة أولى",
+      restart:"إعادة التقييم",
+      badges:{
+        gold:"فكرة ذهبية قابلة للانطلاق فوراً",
+        promising:"فكرة واعدة تحتاج حماية",
+        risky:"فكرة عالية المخاطر"
+      }
+    }
+  },
+  en:{
+    dir:"ltr", font:"var(--font-en)",
+    langName:"English", langFlag:"🇬🇧",
+    appName:"LaunchIQ",
+    nav:{ back:"Back" },
+    welcome:{
+      eyebrow:"Idea Validation Tool",
+      title:"Choose your preferred language",
+      sub:"In just two minutes we'll help you accurately evaluate your digital business idea and how launch-ready and durable it really is.",
+      cta:"Start the Assessment"
+    },
+    step2:{
+      eyebrow:"Step 1 of 3",
+      title:"What's the business you're considering?",
+      sub:"Pick a ready-made business model below, or describe your idea in your own words and we'll classify it for you.",
+      tabModel:"Ready Model",
+      tabIdea:"Describe Idea",
+      placeholder:"e.g. I want to build a bot that auto-replies to store customers on WhatsApp...",
+      continue:"Continue",
+      suggestLabel:"Closest match to your idea",
+      models:[
+        {id:"voice_agent", icon:"🎙️", title:"AI Voice Agent", desc:"Automated voice reception & booking for businesses", kws:["voice","call","reception","phone","bot"]},
+        {id:"content_agency", icon:"🎯", title:"Ads & Content Agency", desc:"Run campaigns and produce content for clients", kws:["ads","campaign","content","marketing","social"]},
+        {id:"digital_products", icon:"💎", title:"Digital Products", desc:"Courses, templates, or one-time-sale tools", kws:["course","template","ebook","digital product"]},
+        {id:"content_automation", icon:"⚙️", title:"Content Automation", desc:"Systems that produce content near-automatically", kws:["automation","automatic","ai content","generate content"]},
+        {id:"micro_saas", icon:"🧩", title:"Micro SaaS", desc:"A subscription tool solving one specific problem", kws:["saas","subscription","software","web app"]},
+        {id:"ecom_dropship", icon:"🛒", title:"E-commerce Store", desc:"Selling physical products or dropshipping", kws:["store","ecommerce","dropship","shipping","shopify"]},
+        {id:"consulting", icon:"🧠", title:"Consulting & Expertise", desc:"Selling your time and expertise directly", kws:["consulting","expert","coach","training"]},
+        {id:"community", icon:"👥", title:"Paid Community", desc:"A closed community with recurring subscription value", kws:["community","membership","subscription"]},
+        {id:"freelance_agency", icon:"🖥️", title:"Tech Services Agency", desc:"Web dev, apps, or design for clients", kws:["development","coding","design","dev agency"]},
+        {id:"ai_tool", icon:"🤖", title:"AI Tool / Product", desc:"A SaaS product built around an AI model", kws:["ai tool","gpt","ai model","artificial intelligence"]}
+      ],
+      fallbackSuggest:"Based on your description, your idea is closest to a \"Custom Digital Tool/Service\" — you can continue and we'll evaluate it using general criteria."
+    },
+    q:{
+      launchTitle:"The 5-Point Launch Compass",
+      stabilityTitle:"Survival & Stability Criteria",
+      qLabel:(n)=>`Question ${n} of 10`,
+      questions:[
+        {section:"launch", weight:1.2, title:"Speed to Cash", hint:"Can this business generate real income within a few weeks?",
+          options:[
+            {label:"Yes, first sale possible within roughly two weeks", score:100},
+            {label:"Needs one to two months of setup before first revenue", score:60},
+            {label:"Requires several months of building before any revenue", score:25}
+          ]},
+        {section:"launch", weight:1.0, title:"Solo-Friendliness", hint:"Can you run and execute this alone, without a team?",
+          options:[
+            {label:"Yes, fully manageable solo from day one", score:100},
+            {label:"Can start solo but will need help later", score:65},
+            {label:"Requires a team from day one", score:20}
+          ]},
+        {section:"launch", weight:1.1, title:"Nature of Income (Recurring vs One-time)", hint:"Is the expected income mainly recurring or a single payment per client?",
+          options:[
+            {label:"Mainly recurring monthly subscription income", score:100},
+            {label:"A mix of recurring and one-time sales", score:65},
+            {label:"One-time payment per client only, no recurrence", score:30}
+          ]},
+        {section:"launch", weight:0.9, title:"Startup Capital Requirements", hint:"How much capital is required to actually launch?",
+          options:[
+            {label:"Near zero, can start with under $100", score:100},
+            {label:"Moderate capital between $100–$1000", score:60},
+            {label:"Requires significant investment above $1000", score:25}
+          ]},
+        {section:"launch", weight:1.0, title:"Scalability", hint:"Can customers and profits double without work hours doubling at the same rate?",
+          options:[
+            {label:"Yes, easily scalable via automation or product", score:100},
+            {label:"Scalable but requires noticeably more effort", score:60},
+            {label:"Each new client requires roughly the same time and effort", score:25}
+          ]}
+      ],
+      questions2:[
+        {section:"stability", weight:1.3, title:"Moat & Defensibility", hint:"How hard is it to replace your service with a free AI tool or fast competitor?",
+          options:[
+            {label:"Very hard to replace — relies on unique relationship, expertise or data", score:100},
+            {label:"Could be copied, but with meaningful effort and time", score:55},
+            {label:"Easily replaced by a free tool or simple competitor", score:20}
+          ]},
+        {section:"stability", weight:1.1, title:"Client Acquisition Ease", hint:"Is the path to reach the decision-maker and close the sale clear?",
+          options:[
+            {label:"Yes, I know exactly where to find and reach my clients", score:100},
+            {label:"General idea, but needs testing and refinement", score:55},
+            {label:"Unclear, will require long research and testing", score:20}
+          ]},
+        {section:"stability", weight:1.0, title:"Operational Fulfillment Intensity", hint:"Does the service eat your time in edits/support, or is it templated & automated?",
+          options:[
+            {label:"Templated and semi-automated, minimal daily intervention", score:100},
+            {label:"Needs some periodic follow-up and adjustments", score:55},
+            {label:"Requires constant support and edits consuming significant time", score:20}
+          ]},
+        {section:"stability", weight:0.9, title:"Platform Dependency Risk", hint:"Does success depend on one single platform that could change or raise prices?",
+          options:[
+            {label:"Not dependent on one platform, flexible and diversified structure", score:100},
+            {label:"Partially depends on a main platform but can switch", score:55},
+            {label:"Fully depends on one platform that could shut down or change policy", score:20}
+          ]},
+        {section:"stability", weight:1.2, title:"Customer LTV vs Churn", hint:"Does your service directly increase your client's revenue, ensuring long retention?",
+          options:[
+            {label:"Yes, directly tied to tangible results that boost retention", score:100},
+            {label:"Partially tied to tangible client results", score:55},
+            {label:"Value isn't clearly tied to measurable client results", score:20}
+          ]}
+      ]
+    },
+    loader:{
+      title:"Analyzing your answers...",
+      statuses:["Collecting your answers...","Calculating launch speed score...","Analyzing long-term stability factors...","Preparing your final report..."]
+    },
+    result:{
+      eyebrow:"Full Assessment Report",
+      title:"Your Idea Evaluation Result",
+      scoreOf:"out of 100",
+      launchLabel:"Launch Readiness",
+      stabilityLabel:"Long-term Stability",
+      strengthTitle:"Key Strength Detected",
+      weaknessTitle:"Critical Weakness to Watch",
+      actionTitle:"Our First-Step Recommendation",
+      restart:"Retake Assessment",
+      badges:{
+        gold:"Golden Idea — Ready to Launch Now",
+        promising:"Promising Idea — Needs Protection",
+        risky:"High-Risk Idea"
+      }
+    }
+  }
+};
+
+/* ================= STATE ================= */
+const state = {
+  lang: localStorage.getItem('biv_lang') || null,
+  theme: localStorage.getItem('biv_theme') || 'dark',
+  step: 'welcome', // welcome -> choice -> q1..q10 -> loader -> result
+  chosenModel: null,
+  ideaText: '',
+  ideaMode: 'model', // model | idea
+  answers: {}, // qIndex(0-9) -> score
+  currentQ: 0
+};
+
+const ALL_QUESTIONS_KEY = () => {
+  const t = I18N[state.lang || 'ar'];
+  return [...t.q.questions, ...t.q.questions2];
+};
+
+/* ================= DOM refs ================= */
+const mainEl = document.getElementById('main');
+const backBtn = document.getElementById('backBtn');
+const progressBar = document.getElementById('progressBar');
+const progressPct = document.getElementById('progressPct');
+const langBtn = document.getElementById('langBtn');
+const langDropdown = document.getElementById('langDropdown');
+const langBtnFlag = document.getElementById('langBtnFlag');
+const langBtnLabel = document.getElementById('langBtnLabel');
+const themeBtn = document.getElementById('themeBtn');
+const themeIcon = document.getElementById('themeIcon');
+
+/* ================= THEME ================= */
+const ICONS = {
+  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  moon:'<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>'
+};
+function applyTheme(){
+  document.documentElement.setAttribute('data-theme', state.theme);
+  themeIcon.innerHTML = state.theme === 'dark' ? ICONS.sun : ICONS.moon;
+  localStorage.setItem('biv_theme', state.theme);
+}
+themeBtn.addEventListener('click', ()=>{
+  state.theme = state.theme === 'dark' ? 'light' : 'dark';
+  applyTheme();
+});
+
+/* ================= LANGUAGE ================= */
+function buildLangDropdown(){
+  langDropdown.innerHTML = '';
+  Object.keys(I18N).forEach(code=>{
+    const t = I18N[code];
+    const btn = document.createElement('button');
+    btn.className = 'lang-option' + (state.lang===code ? ' active':'');
+    btn.innerHTML = `<span>${t.langFlag}</span><span>${t.langName}</span>`;
+    btn.addEventListener('click', ()=>{
+      setLang(code);
+      langDropdown.classList.remove('open');
+    });
+    langDropdown.appendChild(btn);
+  });
+}
+function setLang(code){
+  state.lang = code;
+  localStorage.setItem('biv_lang', code);
+  const t = I18N[code];
+  document.documentElement.lang = code;
+  document.documentElement.dir = t.dir;
+  langBtnFlag.textContent = t.langFlag;
+  langBtnLabel.textContent = code.toUpperCase();
+  buildLangDropdown();
+  render();
+}
+langBtn.addEventListener('click', (e)=>{
+  e.stopPropagation();
+  langDropdown.classList.toggle('open');
+});
+document.addEventListener('click', ()=> langDropdown.classList.remove('open'));
+
+/* ================= NAVIGATION HELPERS ================= */
+const FLOW = ['welcome','choice']; // then q0..q9 then loader then result
+function totalStepsForProgress(){ return 2 + 10 + 1; } // welcome+choice+10q+result(loader counted with result)
+function currentProgressIndex(){
+  if(state.step==='welcome') return 0;
+  if(state.step==='choice') return 1;
+  if(state.step==='loader') return 12;
+  if(state.step==='result') return 13;
+  if(typeof state.step === 'string' && state.step.startsWith('q')){
+    const idx = parseInt(state.step.slice(1),10);
+    return 2+idx;
+  }
+  return 0;
+}
+function updateProgress(){
+  const total = 13; // welcome(0)...q10(11)->12 loader,13 result treat as full
+  let pct = 0;
+  if(state.step==='welcome') pct=0;
+  else if(state.step==='choice') pct=8;
+  else if(state.step.startsWith('q')){
+    const idx = parseInt(state.step.slice(1),10);
+    pct = Math.round(8 + ((idx)/10)*82);
+  } else if(state.step==='loader') pct=95;
+  else if(state.step==='result') pct=100;
+  progressBar.style.width = pct+'%';
+  progressPct.textContent = pct+'%';
+  backBtn.classList.toggle('show', state.step!=='welcome' && state.step!=='loader');
+}
+backBtn.addEventListener('click', goBack);
+function goBack(){
+  if(state.step==='choice'){ state.step='welcome'; }
+  else if(state.step.startsWith('q')){
+    const idx = parseInt(state.step.slice(1),10);
+    if(idx===0) state.step='choice';
+    else state.step = 'q'+(idx-1);
+  } else if(state.step==='result'){
+    state.step = 'q9';
+  }
+  render();
+}
+
+/* ================= SVG ICONS ================= */
+const SVG = {
+  rocket:'<path d="M12 2c2.5 2 4 5.5 4 9 0 2-.5 4-1 5.5l-3 3-3-3c-.5-1.5-1-3.5-1-5.5 0-3.5 1.5-7 4-9z"/><circle cx="12" cy="9" r="1.6"/><path d="M8 15l-3 2 1-3.5M16 15l3 2-1-3.5"/>',
+};
+
+/* ================= RENDER MAIN ================= */
+function render(){
+  updateProgress();
+  mainEl.innerHTML = '';
+  if(!state.lang){ renderLangGate(); return; }
+  const t = I18N[state.lang];
+  document.documentElement.dir = t.dir;
+  document.documentElement.lang = state.lang;
+
+  switch(true){
+    case state.step==='welcome': renderWelcome(t); break;
+    case state.step==='choice': renderChoice(t); break;
+    case state.step.startsWith('q'): renderQuestion(t, parseInt(state.step.slice(1),10)); break;
+    case state.step==='loader': renderLoader(t); break;
+    case state.step==='result': renderResult(t); break;
+    default: renderWelcome(t);
+  }
+}
+
+/* ---------- Language gate (very first screen, before app language set) ---------- */
+function renderLangGate(){
+  const div = document.createElement('div');
+  div.className = 'screen active';
+  div.innerHTML = `
+    <div class="hero-icon"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${SVG.rocket}</svg></div>
+    <span class="eyebrow">Business Idea Validator · مُقيّم الأفكار</span>
+    <h1>اختر لغتك المفضلة<br><span style="font-size:.7em; opacity:.7;">Choose your language</span></h1>
+    <p class="sub">سنقيّم فكرتك التجارية خلال دقيقتين · We'll evaluate your business idea in two minutes</p>
+    <div class="lang-select-grid" id="gateLangGrid"></div>
+  `;
+  mainEl.appendChild(div);
+  const grid = div.querySelector('#gateLangGrid');
+  Object.keys(I18N).forEach(code=>{
+    const t = I18N[code];
+    const card = document.createElement('button');
+    card.className = 'lang-card';
+    card.innerHTML = `<span class="flag">${t.langFlag}</span><span class="name">${t.langName}</span>`;
+    card.addEventListener('click', ()=> setLang(code));
+    grid.appendChild(card);
+  });
+}
+
+/* ---------- Welcome ---------- */
+function renderWelcome(t){
+  const div = document.createElement('div');
+  div.className = 'screen active';
+  div.innerHTML = `
+    <div class="app-brand">${t.appName}</div>
+    <div class="hero-icon"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${SVG.rocket}</svg></div>
+    <span class="eyebrow">${t.welcome.eyebrow}</span>
+    <h1>${t.welcome.title}</h1>
+    <p class="sub">${t.welcome.sub}</p>
+    <div class="lang-select-grid" id="welcomeLangGrid"></div>
+    <button class="btn btn-primary" id="startBtn">${t.welcome.cta}</button>
+  `;
+  mainEl.appendChild(div);
+  const grid = div.querySelector('#welcomeLangGrid');
+  Object.keys(I18N).forEach(code=>{
+    const lt = I18N[code];
+    const card = document.createElement('button');
+    card.className = 'lang-card' + (state.lang===code ? ' selected':'');
+    card.innerHTML = `<span class="flag">${lt.langFlag}</span><span class="name">${lt.langName}</span>`;
+    card.addEventListener('click', ()=>{ setLang(code); });
+    grid.appendChild(card);
+  });
+  div.querySelector('#startBtn').addEventListener('click', ()=>{
+    state.step='choice'; render();
+  });
+}
+
+/* ---------- Choice screen (model select / describe idea) ---------- */
+function keywordMatch(text, models){
+  const lower = text.toLowerCase();
+  let best=null, bestScore=0;
+  models.forEach(m=>{
+    let score=0;
+    m.kws.forEach(k=>{ if(lower.includes(k.toLowerCase())) score++; });
+    if(score>bestScore){ bestScore=score; best=m; }
+  });
+  return bestScore>0 ? best : null;
+}
+
+function renderChoice(t){
+  const div = document.createElement('div');
+  div.className = 'screen active';
+  div.innerHTML = `
+    <span class="eyebrow">${t.step2.eyebrow}</span>
+    <h1>${t.step2.title}</h1>
+    <p class="sub">${t.step2.sub}</p>
+    <div class="path-toggle" id="pathToggle">
+      <button data-mode="model" class="${state.ideaMode==='model'?'active':''}">${t.step2.tabModel}</button>
+      <button data-mode="idea" class="${state.ideaMode==='idea'?'active':''}">${t.step2.tabIdea}</button>
+    </div>
+    <div id="choiceContent"></div>
+    <button class="btn btn-primary" id="continueBtn" style="margin-top:26px;" disabled>${t.step2.continue}</button>
+  `;
+  mainEl.appendChild(div);
+
+  const content = div.querySelector('#choiceContent');
+  const continueBtn = div.querySelector('#continueBtn');
+
+  function refreshContinue(){
+    if(state.ideaMode==='model'){
+      continueBtn.disabled = !state.chosenModel;
+    } else {
+      continueBtn.disabled = state.ideaText.trim().length < 6;
+    }
+  }
+
+  function drawModelGrid(){
+    content.innerHTML = `<div class="model-grid" id="modelGrid"></div>`;
+    const grid = content.querySelector('#modelGrid');
+    t.step2.models.forEach(m=>{
+      const card = document.createElement('button');
+      card.className = 'model-card' + (state.chosenModel===m.id ? ' selected':'');
+      card.innerHTML = `
+        <div class="m-check"></div>
+        <div class="m-icon">${m.icon}</div>
+        <div class="m-title">${m.title}</div>
+        <div class="m-desc">${m.desc}</div>
+      `;
+      card.addEventListener('click', ()=>{
+        state.chosenModel = m.id;
+        state.ideaMode='model';
+        drawModelGrid();
+        refreshContinue();
+      });
+      grid.appendChild(card);
+    });
+  }
+
+  function drawIdeaBox(){
+    content.innerHTML = `
+      <textarea class="idea-textarea" id="ideaBox" placeholder="${t.step2.placeholder}">${state.ideaText}</textarea>
+      <div class="idea-suggestion" id="ideaSuggestion">
+        <div class="s-icon">✨</div>
+        <div class="s-text"><span class="s-label">${t.step2.suggestLabel}</span><span id="suggestText"></span></div>
+      </div>
+    `;
+    const box = content.querySelector('#ideaBox');
+    const suggestion = content.querySelector('#ideaSuggestion');
+    const suggestText = content.querySelector('#suggestText');
+    box.addEventListener('input', ()=>{
+      state.ideaText = box.value;
+      if(box.value.trim().length>5){
+        const match = keywordMatch(box.value, t.step2.models);
+        if(match){
+          suggestText.textContent = `${match.icon} ${match.title}`;
+          suggestion.classList.add('show');
+          state.chosenModel = match.id;
+        } else {
+          suggestText.textContent = t.step2.fallbackSuggest;
+          suggestion.classList.add('show');
+          state.chosenModel = 'custom';
+        }
+      } else {
+        suggestion.classList.remove('show');
+        state.chosenModel = null;
+      }
+      refreshContinue();
+    });
+  }
+
+  if(state.ideaMode==='model') drawModelGrid(); else drawIdeaBox();
+
+  div.querySelectorAll('#pathToggle button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      state.ideaMode = btn.dataset.mode;
+      div.querySelectorAll('#pathToggle button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      if(state.ideaMode==='model') drawModelGrid(); else drawIdeaBox();
+      refreshContinue();
+    });
+  });
+
+  continueBtn.addEventListener('click', ()=>{
+    state.step='q0';
+    render();
+  });
+
+  refreshContinue();
+}
+
+/* ---------- Question screens ---------- */
+function renderQuestion(t, idx){
+  const questions = ALL_QUESTIONS_KEY();
+  const q = questions[idx];
+  const isLaunch = q.section==='launch';
+  const sectionLabel = isLaunch ? t.q.launchTitle : t.q.stabilityTitle;
+  const localIdx = isLaunch ? idx+1 : idx-5+1;
+
+  const div = document.createElement('div');
+  div.className = 'screen active';
+  div.innerHTML = `
+    <span class="q-section-badge">${sectionLabel}</span>
+    <span class="q-number">${t.q.qLabel(idx+1)}</span>
+    <h2 class="q-title">${q.title}</h2>
+    <p class="q-hint">${q.hint}</p>
+    <div class="options-list" id="optList"></div>
+  `;
+  mainEl.appendChild(div);
+  const list = div.querySelector('#optList');
+  q.options.forEach((opt, oi)=>{
+    const card = document.createElement('button');
+    card.className = 'option-card' + (state.answers[idx]!==undefined && state.answers[idx].oi===oi ? ' selected':'');
+    card.innerHTML = `<div class="option-radio"></div><div class="option-label">${opt.label}</div>`;
+    card.addEventListener('click', ()=>{
+      state.answers[idx] = {oi, score:opt.score, weight:q.weight};
+      // auto-advance after short delay
+      list.querySelectorAll('.option-card').forEach(c=>c.classList.remove('selected'));
+      card.classList.add('selected');
+      setTimeout(()=>{
+        if(idx<9){ state.step='q'+(idx+1); }
+        else { state.step='loader'; }
+        render();
+        if(state.step==='loader') runLoader(t);
+      }, 380);
+    });
+    list.appendChild(card);
+  });
+}
+
+/* ---------- Loader ---------- */
+function renderLoader(t){
+  const div = document.createElement('div');
+  div.className = 'screen loader-screen active';
+  div.innerHTML = `
+    <div class="loader-ring-wrap">
+      <svg viewBox="0 0 150 150">
+        <circle class="loader-ring-bg" cx="75" cy="75" r="70"/>
+        <circle class="loader-ring-fg" id="loaderRing" cx="75" cy="75" r="70"/>
+      </svg>
+      <div class="loader-pct" id="loaderPctText">0%</div>
+    </div>
+    <h2 style="font-size:19px; font-weight:800; margin-bottom:10px;">${t.loader.title}</h2>
+    <div class="loader-status" id="loaderStatus">${t.loader.statuses[0]}</div>
+    <div class="loader-bars"><span></span><span></span><span></span><span></span><span></span></div>
+  `;
+  mainEl.appendChild(div);
+}
+function runLoader(t){
+  const ring = document.getElementById('loaderRing');
+  const pctText = document.getElementById('loaderPctText');
+  const statusEl = document.getElementById('loaderStatus');
+  if(!ring) return;
+  const circumference = 439.8;
+  let progress = 0;
+  const duration = 2400;
+  const start = performance.now();
+  let statusIdx = 0;
+  statusEl.textContent = t.loader.statuses[0];
+  const statusInterval = setInterval(()=>{
+    statusIdx = (statusIdx+1) % t.loader.statuses.length;
+    if(statusEl){
+      statusEl.style.opacity=0;
+      setTimeout(()=>{ if(statusEl){ statusEl.textContent = t.loader.statuses[statusIdx]; statusEl.style.opacity=1; } }, 200);
+    }
+  }, duration/ t.loader.statuses.length);
+
+  function tick(now){
+    const elapsed = now - start;
+    progress = Math.min(1, elapsed/duration);
+    const offset = circumference * (1-progress);
+    if(ring) ring.style.strokeDashoffset = offset;
+    if(pctText) pctText.textContent = Math.round(progress*100)+'%';
+    if(progress<1){
+      requestAnimationFrame(tick);
+    } else {
+      clearInterval(statusInterval);
+      setTimeout(()=>{
+        state.step='result';
+        render();
+      }, 350);
+    }
+  }
+  requestAnimationFrame(tick);
+}
+
+/* ---------- Scoring ---------- */
+function computeScores(){
+  const questions = ALL_QUESTIONS_KEY();
+  let launchSum=0, launchWeight=0, stabSum=0, stabWeight=0;
+  questions.forEach((q, idx)=>{
+    const ans = state.answers[idx];
+    if(!ans) return;
+    if(q.section==='launch'){ launchSum += ans.score*ans.weight; launchWeight += ans.weight*100; }
+    else { stabSum += ans.score*ans.weight; stabWeight += ans.weight*100; }
+  });
+  const launchScore = launchWeight>0 ? Math.round((launchSum/launchWeight)*100) : 0;
+  const stabScore = stabWeight>0 ? Math.round((stabSum/stabWeight)*100) : 0;
+  const overall = Math.round((launchScore+stabScore)/2);
+  return {launchScore, stabScore, overall};
+}
+
+function findStrengthWeakness(t){
+  const questions = ALL_QUESTIONS_KEY();
+  let best=null, bestVal=-1, worst=null, worstVal=101;
+  questions.forEach((q, idx)=>{
+    const ans = state.answers[idx];
+    if(!ans) return;
+    if(ans.score > bestVal){ bestVal = ans.score; best = q; }
+    if(ans.score < worstVal){ worstVal = ans.score; worst = q; }
+  });
+  return {best, worst};
+}
+
+/* ---------- Result ---------- */
+function renderResult(t){
+  const {launchScore, stabScore, overall} = computeScores();
+  const {best, worst} = findStrengthWeakness(t);
+
+  let badgeClass, badgeText, badgeColor;
+  if(overall>=75){ badgeClass='badge-gold'; badgeText=t.result.badges.gold; badgeColor='var(--gold)'; }
+  else if(overall>=50){ badgeClass='badge-promising'; badgeText=t.result.badges.promising; badgeColor='var(--accent-2)'; }
+  else { badgeClass='badge-risky'; badgeText=t.result.badges.risky; badgeColor='var(--danger)'; }
+
+  const actionAdvice = generateAdvice(t, launchScore, stabScore, worst);
+
+  const div = document.createElement('div');
+  div.className = 'screen active';
+  div.innerHTML = `
+    <span class="eyebrow">${t.result.eyebrow}</span>
+    <h1>${t.result.title}</h1>
+    <div class="result-badge ${badgeClass}">🏆 ${badgeText}</div>
+
+    <div class="score-ring-wrap">
+      <svg viewBox="0 0 190 190">
+        <circle class="score-ring-bg" cx="95" cy="95" r="80"/>
+        <circle class="score-ring-fg" id="resultRing" cx="95" cy="95" r="80" stroke="${badgeColor}"/>
+      </svg>
+      <div class="score-center">
+        <div class="score-num" id="scoreNum">0</div>
+        <div class="score-max">${t.result.scoreOf}</div>
+      </div>
+    </div>
+
+    <div class="dual-scores">
+      <div class="mini-score">
+        <div class="ms-label">🚀 ${t.result.launchLabel}</div>
+        <div class="ms-value" style="color:var(--accent)">${launchScore}%</div>
+        <div class="mini-bar-track"><div class="mini-bar-fill" id="launchBar" style="background:var(--accent)"></div></div>
+      </div>
+      <div class="mini-score">
+        <div class="ms-label">🛡️ ${t.result.stabilityLabel}</div>
+        <div class="ms-value" style="color:var(--accent-2)">${stabScore}%</div>
+        <div class="mini-bar-track"><div class="mini-bar-fill" id="stabBar" style="background:var(--accent-2)"></div></div>
+      </div>
+    </div>
+
+    <div class="insight-cards">
+      <div class="insight-card strength">
+        <div class="insight-icon">💪</div>
+        <div>
+          <div class="insight-title">${t.result.strengthTitle}</div>
+          <div class="insight-text">${best ? best.title : ''}</div>
+        </div>
+      </div>
+      <div class="insight-card weakness">
+        <div class="insight-icon">⚠️</div>
+        <div>
+          <div class="insight-title">${t.result.weaknessTitle}</div>
+          <div class="insight-text">${worst ? worst.title : ''}</div>
+        </div>
+      </div>
+      <div class="insight-card action">
+        <div class="insight-icon">🎯</div>
+        <div>
+          <div class="insight-title">${t.result.actionTitle}</div>
+          <div class="insight-text">${actionAdvice}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="result-actions">
+      <button class="btn btn-ghost btn-block" id="restartBtn">${t.result.restart}</button>
+    </div>
+    <div class="footer-note">${t.appName}</div>
+  `;
+  mainEl.appendChild(div);
+
+  requestAnimationFrame(()=>{
+    const ring = document.getElementById('resultRing');
+    const circumference = 502.4;
+    ring.style.strokeDashoffset = circumference*(1-overall/100);
+    animateNumber(document.getElementById('scoreNum'), overall, 1300);
+    document.getElementById('launchBar').style.width = launchScore+'%';
+    document.getElementById('stabBar').style.width = stabScore+'%';
+  });
+
+  div.querySelector('#restartBtn').addEventListener('click', ()=>{
+    state.step='welcome';
+    state.chosenModel=null;
+    state.ideaText='';
+    state.ideaMode='model';
+    state.answers={};
+    render();
+  });
+}
+
+function animateNumber(el, target, duration){
+  const start = performance.now();
+  function tick(now){
+    const p = Math.min(1, (now-start)/duration);
+    el.textContent = Math.round(target*p);
+    if(p<1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+function generateAdvice(t, launchScore, stabScore, worst){
+  const isAr = state.lang==='ar';
+  if(launchScore>=70 && stabScore>=70){
+    return isAr
+      ? "ابدأ بإطلاق نسخة أولية (MVP) خلال أسبوعين، ووثّق عملية العمل لتحويلها لاحقاً إلى نظام شبه مؤتمت."
+      : "Launch a minimum viable version within two weeks, and document your process so it can be semi-automated later.";
+  }
+  if(launchScore>=70 && stabScore<70){
+    return isAr
+      ? "انطلق سريعاً لاختبار السوق، لكن ابدأ فوراً ببناء عامل حماية (عقود، بيانات عملاء، أو تخصص ضيق) لتقليل قابلية الاستبدال."
+      : "Launch quickly to test the market, but immediately start building a defensibility factor (contracts, client data, or a narrow specialty) to reduce replaceability.";
+  }
+  if(launchScore<70 && stabScore>=70){
+    return isAr
+      ? "الفكرة قوية على المدى الطويل لكنها تحتاج تجهيزاً أطول؛ قسّمها إلى مراحل صغيرة لتحقيق أول دخل أسرع."
+      : "The idea is strong long-term but needs longer setup; break it into smaller phases to reach first revenue faster.";
+  }
+  return isAr
+    ? "قبل الاستثمار الكامل، اختبر الفكرة بأقل جهد ممكن (عرض تجريبي أو عميل واحد) للتأكد من الطلب الفعلي قبل التوسع."
+    : "Before fully committing, test the idea with minimal effort (a pilot offer or a single client) to confirm real demand before scaling.";
+}
+
+/* ================= INIT ================= */
+applyTheme();
+buildLangDropdown();
+if(state.lang){
+  const t = I18N[state.lang];
+  document.documentElement.lang = state.lang;
+  document.documentElement.dir = t.dir;
+  langBtnFlag.textContent = t.langFlag;
+  langBtnLabel.textContent = state.lang.toUpperCase();
+} else {
+  langBtnLabel.textContent = 'EN';
+}
+render();
+
+})();
+</script>
+</body>
+</html>
